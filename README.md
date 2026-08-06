@@ -26,11 +26,11 @@ Sua missão como aluno é analisar o código-fonte, identificar os pontos de mel
 
 ## 🛠️ Requisitos para Execução
 
-* **Linguagem:** Java 17 ou superior
+* **Linguagem:** Java 21 ou superior
+* **Build:** Gradle (wrapper incluso, não precisa instalar Gradle à parte)
 
 ### Como Executar
 
 ```bash
-javac UsuarioPrinter.java
-java UsuarioPrinter
+./gradlew run
 ```
