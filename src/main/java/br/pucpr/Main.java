@@ -7,7 +7,6 @@ import static br.pucpr.user.Theme.LIGHT;
 
 import br.pucpr.planet.Planet;
 import br.pucpr.planet.PlanetasPrinter;
-import br.pucpr.user.Theme;
 import br.pucpr.user.User;
 import br.pucpr.user.UsersPrinter;
 import java.util.ArrayList;
@@ -41,6 +40,6 @@ public class Main {
     System.out.println();
     System.out.println("IMPRIMINDO PLANETAS");
     System.out.println("-------------------");
-    new PlanetasPrinter().print(planetas, false, Theme.NORMAL);
+    new PlanetasPrinter().print(planetas, LIGHT, true);
   }
 }

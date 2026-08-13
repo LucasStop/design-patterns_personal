@@ -24,8 +24,10 @@ Quanto aos dados:
 
 Ao final da implementação reflita:
 
-1. Sua solução ficou com muito código duplicado?
-2. O que aconteceria se uma terceira classe tivesse que ser adicionada?
+1. Sua solução ficou com muito código duplicado?\
+Não, acho que poderia apenas melhorar o uso do Locale.
+ 2. O que aconteceria se uma terceira classe tivesse que ser adicionada?\
+Eu acredito que só iria precisar duplicar os códigos para poder imprimir algo, para melhor uso já poderíamos criar uma classe que imprime com base no tipo
 
 ---
 
