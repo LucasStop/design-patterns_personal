@@ -10,6 +10,7 @@ public class Table {
       return;
     }
 
+    // ===== Calculando a largura de cada coluna =====
     String[] headers = rows.getFirst().getHeaders();
     int[] widths = new int[headers.length];
 
@@ -20,43 +21,45 @@ public class Table {
       String[] rowData = row.getRow();
       for (int i = 0; i < rowData.length; i++) {
         if (rowData[i] != null) {
-          widths[i] = Math.max(widths[i], headers[i].length());
+          widths[i] = Math.max(widths[i], Math.max(headers[i].length(), rowData[i].length()));
         }
       }
     }
 
+    // ===== Borda (topo/meio/rodapé da tabela) =====
     final var borderChar = theme.getBorderChar();
-    int BORDER_WIDTH = 1; // pipe inicial
+    int borderWidth = 1; // pipe inicial
     for (int w : widths) {
-      BORDER_WIDTH += w + 3; // espaço + largura + espaço + pipe
+      borderWidth += w + 3; // espaço + largura + espaço + pipe
     }
 
     StringBuilder sb = new StringBuilder();
-    sb.repeat(borderChar, BORDER_WIDTH).append("\n");
+    sb.repeat(borderChar, borderWidth).append("\n");
 
+    // ===== Cabeçalho (nomes das colunas) =====
     StringBuilder headerFormat = new StringBuilder("|");
     for (int w : widths) {
       headerFormat.append(" %-").append(w).append("s |");
     }
 
-    sb.append(String.format(headerFormat.toString() + "%n", (Object[]) headers));
-    sb.append(borderChar.repeat(BORDER_WIDTH)).append("\n");
+    String rowFormat = headerFormat + "%n";
 
+    sb.append(String.format(rowFormat, (Object[]) headers));
+    sb.repeat(borderChar, borderWidth).append("\n");
+
+    // ===== Linhas de dados (uma por TableData da lista) =====
     for (var row : rows) {
       if (row == null) {
         continue;
       }
       String[] rowData = row.getRow();
-      StringBuilder rowFormat = new StringBuilder("|");
-      for (int w : widths) {
-        rowFormat.append(" %-").append(w).append("s |");
-      }
 
-      sb.append(String.format(rowFormat.toString() + "%n", (Object[]) rowData));
+      sb.append(String.format(rowFormat, (Object[]) rowData));
     }
 
-    sb.append(borderChar.repeat(BORDER_WIDTH)).append("\n");
+    sb.repeat(borderChar, borderWidth).append("\n");
 
+    // ===== Saída (alinhada à direita ou direto no console) =====
     if (alignRight) {
       var lines = sb.toString().split("\n");
       for (var line : lines) {

@@ -14,6 +14,26 @@ import java.util.List;
 
 public class DesignPatternsApplication {
   public static void main(String[] args) {
+
+    System.out.println("IMPRIMINDO USUÁRIOS");
+    System.out.println("-------------------");
+    final List<TableData> userRows = new ArrayList<>();
+    for (var user : createUsers()) {
+      userRows.add(new UserTableAdapter(user));
+    }
+    new Table().print(userRows, LIGHT, true);
+
+    System.out.println();
+    System.out.println("IMPRIMINDO PLANETAS");
+    System.out.println("-------------------");
+    final List<TableData> planetRows = new ArrayList<>();
+    for (var planet : createPlanets()) {
+      planetRows.add(new PlanetTableAdapter(planet));
+    }
+    new Table().print(planetRows, LIGHT, true);
+  }
+
+  private static ArrayList<User> createUsers() {
     final var usuarios = new ArrayList<User>();
     usuarios.add(
         new User(101L, "Carlos Eduardo de Souza", "carlos.souza@email.com", "12345678901"));
@@ -23,15 +43,10 @@ public class DesignPatternsApplication {
     usuarios.add(new User(104L, "Mariana Costa", "marianacosta.email.com", "11122233344"));
     usuarios.add(new User(105L, "Lucas Mendes", "lucas@email.com", "12345"));
     usuarios.add(new User(106L, "", "beatriz@email.com", "55566677788"));
+    return usuarios;
+  }
 
-    System.out.println("IMPRIMINDO USUARIOS");
-    System.out.println("-------------------");
-    final List<TableData> userRows = new ArrayList<>();
-    for (var user : usuarios) {
-      userRows.add(new UserTableAdapter(user));
-    }
-    new Table().print(userRows, LIGHT, true);
-
+  private static ArrayList<Planet> createPlanets() {
     final var planetas = new ArrayList<Planet>();
     planetas.add(new Planet("Mercúrio", 4879, 57_910_000L, ROCK));
     planetas.add(new Planet("Vênus", 12104, 108_200_000L, ROCK));
@@ -42,13 +57,6 @@ public class DesignPatternsApplication {
     planetas.add(new Planet("Urano", 51118, 2_870_990_000L, ICE));
     planetas.add(new Planet("Netuno", 49528, 4_504_300_000L, ICE));
     planetas.add(new Planet("Plutão", 2376, 5_906_380_000L, DWARF));
-    System.out.println();
-    System.out.println("IMPRIMINDO PLANETAS");
-    System.out.println("-------------------");
-    final List<TableData> planetRows = new ArrayList<>();
-    for (var planet : planetas) {
-      planetRows.add(new PlanetTableAdapter(planet));
-    }
-    new Table().print(planetRows, LIGHT, true);
+    return planetas;
   }
 }

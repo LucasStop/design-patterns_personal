@@ -4,5 +4,5 @@ public enum PlanetType {
   ROCK,
   GAS,
   ICE,
-  DWARF;
+  DWARF
 }

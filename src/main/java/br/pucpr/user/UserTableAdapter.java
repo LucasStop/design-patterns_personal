@@ -20,7 +20,7 @@ public class UserTableAdapter implements TableData {
       formatId(user.id()),
       formatName(user),
       validateAndFormatEmail(user.email()),
-      formatCpf(user.cpf(), true)
+      formatCpf(user.cpf())
     };
   }
 
@@ -28,20 +28,11 @@ public class UserTableAdapter implements TableData {
     return id != null ? id.toString() : "0";
   }
 
-  private static String formatCpf(String cpf, boolean mask) {
+  private static String formatCpf(String cpf) {
     if (cpf == null || cpf.length() != 11) {
       return "CPF INVÁLIDO";
     }
-    if (mask) {
-      return "***." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-**";
-    }
-    return cpf.substring(0, 3)
-        + "."
-        + cpf.substring(3, 6)
-        + "."
-        + cpf.substring(6, 9)
-        + "-"
-        + cpf.substring(9, 11);
+    return "***." + cpf.substring(3, 6) + "." + cpf.substring(6, 9) + "-**";
   }
 
   private static String validateAndFormatEmail(String email) {
