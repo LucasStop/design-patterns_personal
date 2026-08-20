@@ -1,9 +1,9 @@
 package br.pucpr.planet;
 
-public record Planet(
-    String name, double diameterKm, long sunDistanceKm, double sunDistanceUa, PlanetType type) {
-  // sunDistanceUa calculated from sunDistanceKm
-  public Planet(String name, double diameterKm, long sunDistanceKm, PlanetType type) {
-    this(name, diameterKm, sunDistanceKm, (sunDistanceKm / 149_597_870.7), type);
+public record Planet(String name, double diameterKm, long sunDistanceKm, PlanetType type) {
+  public static final long EARTH_SUN_DISTANCE_KM = 149_600_000L;
+
+  public static double sunDistanceUa(long sunDistanceKm) {
+    return (double) sunDistanceKm / EARTH_SUN_DISTANCE_KM;
   }
 }

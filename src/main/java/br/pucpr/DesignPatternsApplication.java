@@ -1,17 +1,18 @@
 package br.pucpr;
 
 import static br.pucpr.planet.PlanetType.*;
-import static br.pucpr.planet.PlanetType.DWARF;
-import static br.pucpr.planet.PlanetType.ICE;
 import static br.pucpr.user.Theme.LIGHT;
 
 import br.pucpr.planet.Planet;
-import br.pucpr.planet.PlanetasPrinter;
+import br.pucpr.planet.PlanetTableAdapter;
+import br.pucpr.table.Table;
+import br.pucpr.table.TableData;
 import br.pucpr.user.User;
-import br.pucpr.user.UsersPrinter;
+import br.pucpr.user.UserTableAdapter;
 import java.util.ArrayList;
+import java.util.List;
 
-public class Main {
+public class DesignPatternsApplication {
   public static void main(String[] args) {
     final var usuarios = new ArrayList<User>();
     usuarios.add(
@@ -25,7 +26,11 @@ public class Main {
 
     System.out.println("IMPRIMINDO USUARIOS");
     System.out.println("-------------------");
-    new UsersPrinter().print(usuarios, true, true, LIGHT);
+    final List<TableData> userRows = new ArrayList<>();
+    for (var user : usuarios) {
+      userRows.add(new UserTableAdapter(user));
+    }
+    new Table().print(userRows, LIGHT, true);
 
     final var planetas = new ArrayList<Planet>();
     planetas.add(new Planet("Mercúrio", 4879, 57_910_000L, ROCK));
@@ -40,6 +45,10 @@ public class Main {
     System.out.println();
     System.out.println("IMPRIMINDO PLANETAS");
     System.out.println("-------------------");
-    new PlanetasPrinter().print(planetas, LIGHT, true);
+    final List<TableData> planetRows = new ArrayList<>();
+    for (var planet : planetas) {
+      planetRows.add(new PlanetTableAdapter(planet));
+    }
+    new Table().print(planetRows, LIGHT, true);
   }
 }

@@ -13,7 +13,7 @@ version = "1.0-SNAPSHOT"
 
 
 application {
-    mainClass = "br.pucpr.Main"
+    mainClass = "br.pucpr.DesignPatternsApplication"
 }
 
 java {
