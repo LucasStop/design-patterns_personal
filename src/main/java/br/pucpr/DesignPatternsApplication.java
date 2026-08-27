@@ -4,11 +4,16 @@ import static br.pucpr.planet.PlanetType.*;
 import static br.pucpr.user.Theme.LIGHT;
 
 import br.pucpr.planet.Planet;
-import br.pucpr.planet.PlanetTableAdapter;
+import br.pucpr.planet.columns.*;
+import br.pucpr.table.ColumnData;
+import br.pucpr.table.ColumnDataAdapter;
 import br.pucpr.table.Table;
 import br.pucpr.table.TableData;
 import br.pucpr.user.User;
-import br.pucpr.user.UserTableAdapter;
+import br.pucpr.user.columns.CpfColumn;
+import br.pucpr.user.columns.EmailColumn;
+import br.pucpr.user.columns.IdColumn;
+import br.pucpr.user.columns.UserNameColumn;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +23,10 @@ public class DesignPatternsApplication {
     System.out.println("IMPRIMINDO USUÁRIOS");
     System.out.println("-------------------");
     final List<TableData> userRows = new ArrayList<>();
+    final List<ColumnData<? super User>> userColumns =
+        List.of(new IdColumn(), new UserNameColumn(), new EmailColumn(), new CpfColumn());
     for (var user : createUsers()) {
-      userRows.add(new UserTableAdapter(user));
+      userRows.add(new ColumnDataAdapter<User>(user, userColumns));
     }
     new Table().print(userRows, LIGHT, true);
 
@@ -27,8 +34,15 @@ public class DesignPatternsApplication {
     System.out.println("IMPRIMINDO PLANETAS");
     System.out.println("-------------------");
     final List<TableData> planetRows = new ArrayList<>();
+    final List<ColumnData<? super Planet>> planetColumns =
+        List.of(
+            new PlanetNameColumn(),
+            new DiameterColumn(),
+            new DistSunKmColumn(),
+            new DistSunUaColumn(),
+            new TypeColumn());
     for (var planet : createPlanets()) {
-      planetRows.add(new PlanetTableAdapter(planet));
+      planetRows.add(new ColumnDataAdapter<Planet>(planet, planetColumns));
     }
     new Table().print(planetRows, LIGHT, true);
   }

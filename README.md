@@ -1,13 +1,20 @@
 # Atividade
 
-Vamos separar nossas classes em diferentes responsabilidades através do padrão de projetos Adapter.
+Terminar de implementar as classes filhas de `ColumnData` para desenhar a tabela de usuários, usando o padrão Strategy (uma classe por coluna) combinado com o Adapter que já tínhamos.
+
+---
+
+## 👥 Grupo
+
+Lucas Stopinski da Silva e Lucas Bruno e Silva
+
 ---
 
 ## 🎯 Objetivo da Atividade
 
-1. Crie a interface br.pucpr.table.TableData para representar os dados de uma tabela (TableData)
-2. Refatore as classes UsersPrinter e PlanetasPrinter para ter uma única classe Table
-3. A largura da coluna será dada pela largura do seu cabeçalho.
+1. Criar a interface `br.pucpr.table.ColumnData<T>`, representando uma coluna capaz de dizer seu próprio nome (`getColumnName()`) e extrair/formatar o valor de um objeto `T` (`getValue(T)`).
+2. Implementar as classes filhas de `ColumnData` para desenhar a tabela de usuários (`IdColumn`, `UserNameColumn`, `CpfColumn`, `EmailColumn`) e, pela mesma lógica, a de planetas (`PlanetNameColumn`, `DiameterColumn`, `DistSunKmColumn`, `DistSunUaColumn`, `TypeColumn`).
+3. Criar `br.pucpr.table.ColumnDataAdapter<T> implements TableData` — Adapter genérico que monta uma linha da tabela a partir de um objeto e da lista de colunas que sabem formatá-lo, substituindo os antigos `UserTableAdapter`/`PlanetTableAdapter`.
 
 ---
 
@@ -19,13 +26,8 @@ Vamos separar nossas classes em diferentes responsabilidades através do padrão
 
 ## 📝 Notas de Desenvolvimento
 
-Pontos que enfrentei ao longo da refatoração, pra deixar registrado o raciocínio (e não só o resultado):
-
-- **Onde colocar a formatação dos valores** (CPF mascarado, distância em UA, tipo de planeta por extenso etc.): decidi manter fora dos records `User`/`Planet`. Eles são dados de domínio; quem sabe formatar pra tabela é o próprio `TableData` (`UserTableAdapter`/`PlanetTableAdapter`), senão o domínio fica acoplado a uma preocupação de apresentação.
-- **`Table` genérica**: a primeira versão tinha número de colunas e largura fixos no código (pensado só pra 3 colunas). Corrigi pra montar o formato dinamicamente a partir de `getHeaders().length`, senão não funcionava nem pros 4 campos de usuário nem pros 5 de planeta ao mesmo tempo.
-- **Cálculo da borda**: passei por algumas fórmulas erradas pra largura da borda (valor fixo, depois `headers.length * N` com `N` chutado) antes de calcular certo somando a largura real de cada coluna.
-- **Requisito 3 (largura = largura do cabeçalho)**: implementado, mas expôs um problema — `String.format("%-Ns", ...)` só define largura **mínima**. Quando o valor da linha é maior que o cabeçalho (ex. `"1.429.400.000 km"` é maior que `"DIST. SOL (KM)"`), a linha estoura e desalinha a borda, porque não existe truncamento automático.
-
-### Em andamento
-
-Ainda estou ajustando pra tabela não estourar: a ideia é que a largura de cada coluna passe a ser o **tamanho mínimo necessário pra caber o maior valor daquela coluna** (olhando cabeçalho e todas as linhas, não só o cabeçalho isolado), garantindo alinhamento sem cortar nenhum dado. Ainda não finalizei essa parte.
+- **Por que estender a nossa arquitetura em vez de adotar a do professor**: o material de referência da aula (`upstream/aula-04`) já vem com o `ColumnData`/`ColumnTableData` prontos, mas embutidos numa arquitetura de `TableData` diferente da nossa (por coleção inteira, `Table` com estado, `Theme` em outro pacote). Optamos por aplicar o mesmo conceito — Strategy genérico por coluna — em cima do que já tínhamos (`TableData` por linha, `Table` estático), sem jogar fora o trabalho da aula anterior.
+- **Colisão de nomes**: como `User` e `Planet` cada um precisava de uma coluna "Nome", as classes viraram `UserNameColumn` e `PlanetNameColumn` em pacotes diferentes (`br.pucpr.user.columns` e `br.pucpr.planet.columns`) para não colidir.
+- **`ColumnDataAdapter` guardando referência mutável (SpotBugs EI2)**: o construtor recebia a lista de colunas e guardava a mesma referência (`this.columns = columns`). Se quem chamou o construtor alterasse essa lista depois, o adapter mudava junto sem querer. Corrigido fazendo cópia defensiva (`new ArrayList<>(columns)`) — o `object` (linha única) não precisa da mesma cópia, só a lista de colunas é compartilhada/mutável entre chamadas.
+- **Lista de colunas montada uma vez, fora do loop**: a lista de colunas (`userColumns`/`planetColumns`) é a mesma para todo objeto do mesmo tipo — construída antes do `for` em `DesignPatternsApplication`, não recriada a cada iteração.
+- **Chamada de método estático via instância**: `Planet.sunDistanceUa(long)` é estático; a primeira versão do `DistSunUaColumn` chamava via `object.sunDistanceUa(...)`, o que compila mas confunde leitura — corrigido para `Planet.sunDistanceUa(...)`.
