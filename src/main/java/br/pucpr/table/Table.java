@@ -1,72 +1,113 @@
 package br.pucpr.table;
 
-import br.pucpr.user.Theme;
-import java.util.List;
+import br.pucpr.table.model.TableData;
+import br.pucpr.table.reflection.Column;
+import java.util.ArrayList;
 
-public class Table {
-  public void print(List<TableData> rows, Theme theme, boolean alignRight) {
-    if (rows == null || rows.isEmpty()) {
-      System.out.println("ERRO: Lista de dados vazia ou nula.");
-      return;
+public final class Table {
+  private TableData data;
+  private Theme theme;
+  private boolean alignRight;
+
+  public Table(TableData data, Theme theme, boolean alignRight) {
+    if (data == null) {
+      throw new IllegalArgumentException("Data cannot be null");
     }
+    this.data = data;
+    setTheme(theme);
+    this.alignRight = alignRight;
+  }
 
-    // ===== Calculando a largura de cada coluna =====
-    String[] headers = rows.getFirst().getHeaders();
-    int[] widths = new int[headers.length];
+  public Table(TableData data, Theme theme) {
+    this(data, theme, false);
+  }
 
-    for (var row : rows) {
-      if (row == null) {
-        continue;
+  public Table(TableData data) {
+    this(data, Theme.NORMAL);
+  }
+
+  public TableData getData() {
+    return data;
+  }
+
+  public void setData(TableData data) {
+    this.data = data;
+  }
+
+  public Theme getTheme() {
+    return theme;
+  }
+
+  public void setTheme(Theme theme) {
+    if (theme == null) {
+      throw new IllegalArgumentException("Theme cannot be null");
+    }
+    this.theme = theme;
+  }
+
+  @Column(header = "Alinhamento")
+  public boolean isAlignRight() {
+    return alignRight;
+  }
+
+  public void setAlignRight(boolean alignRight) {
+    this.alignRight = alignRight;
+  }
+
+  public void print() {
+    System.out.print(this);
+  }
+
+  private String headerLine() {
+    final var sb = new StringBuilder();
+    sb.append("|");
+    for (int i = 0; i < data.colCount(); i++) {
+      sb.append(String.format(" %s |", data.header(i)));
+    }
+    return sb.toString();
+  }
+
+  private String lineFormat() {
+    final var sb = new StringBuilder();
+    sb.append("|");
+
+    for (int i = 0; i < data.colCount(); i++) {
+      final var size = data.header(i).length();
+
+      sb.append(" %-").append(size).append("s |");
+    }
+    return sb.toString();
+  }
+
+  private String trimmedData(int row, int col) {
+    final var colSize = getData().header(col).length();
+    final var data = getData().get(row, col);
+    if (data.length() <= colSize) return data;
+    return colSize < 3 ? ".".repeat(colSize) : data.substring(0, colSize - 3) + "...";
+  }
+
+  @Override
+  public String toString() {
+    final var lines = new ArrayList<String>(this.getData().rowCount() + 3);
+
+    // Borda superior e cabeçalho
+    final var headerLine = this.headerLine();
+    final var borderLine = theme.getBorderChar().repeat(headerLine.length());
+
+    lines.add(borderLine);
+    lines.add(headerLine);
+    lines.add(borderLine);
+
+    // Linhas de dados
+    for (int r = 0; r < data.rowCount(); r++) {
+      final var rowData = new String[data.colCount()];
+      for (int c = 0; c < data.colCount(); c++) {
+        rowData[c] = trimmedData(r, c);
       }
-      String[] rowData = row.getRow();
-      for (int i = 0; i < rowData.length; i++) {
-        if (rowData[i] != null) {
-          widths[i] = Math.max(widths[i], Math.max(headers[i].length(), rowData[i].length()));
-        }
-      }
+      lines.add(String.format(lineFormat(), (Object[]) rowData));
     }
-
-    // ===== Borda (topo/meio/rodapé da tabela) =====
-    final var borderChar = theme.getBorderChar();
-    int borderWidth = 1; // pipe inicial
-    for (int w : widths) {
-      borderWidth += w + 3; // espaço + largura + espaço + pipe
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.repeat(borderChar, borderWidth).append("\n");
-
-    // ===== Cabeçalho (nomes das colunas) =====
-    StringBuilder headerFormat = new StringBuilder("|");
-    for (int w : widths) {
-      headerFormat.append(" %-").append(w).append("s |");
-    }
-
-    String rowFormat = headerFormat + "%n";
-
-    sb.append(String.format(rowFormat, (Object[]) headers));
-    sb.repeat(borderChar, borderWidth).append("\n");
-
-    // ===== Linhas de dados (uma por TableData da lista) =====
-    for (var row : rows) {
-      if (row == null) {
-        continue;
-      }
-      String[] rowData = row.getRow();
-
-      sb.append(String.format(rowFormat, (Object[]) rowData));
-    }
-
-    sb.repeat(borderChar, borderWidth).append("\n");
-
-    // ===== Saída (alinhada à direita ou direto no console) =====
-    if (alignRight) {
-      var lines = sb.toString().split("\n");
-      for (var line : lines) {
-        System.out.println("                    " + line);
-      }
-    } else {
-      System.out.print(sb);
-    }
+    lines.add(borderLine);
+    final var s = isAlignRight() ? "                    " : "";
+    return lines.stream().reduce("", (a, b) -> a + s + b + "\n");
   }
 }

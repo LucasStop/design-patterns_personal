@@ -1,53 +1,43 @@
 package br.pucpr;
 
 import static br.pucpr.planet.PlanetType.*;
-import static br.pucpr.user.Theme.LIGHT;
 
 import br.pucpr.planet.Planet;
-import br.pucpr.planet.columns.*;
-import br.pucpr.table.ColumnData;
+import br.pucpr.planet.PlanetColumns;
 import br.pucpr.table.ColumnDataAdapter;
 import br.pucpr.table.Table;
-import br.pucpr.table.TableData;
+import br.pucpr.table.reflection.Util;
 import br.pucpr.user.User;
-import br.pucpr.user.columns.CpfColumn;
-import br.pucpr.user.columns.EmailColumn;
-import br.pucpr.user.columns.IdColumn;
-import br.pucpr.user.columns.UserNameColumn;
+import br.pucpr.user.UserColumns;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DesignPatternsApplication {
   public static void main(String[] args) {
 
     System.out.println("IMPRIMINDO USUÁRIOS");
     System.out.println("-------------------");
-    final List<TableData> userRows = new ArrayList<>();
-    final List<ColumnData<? super User>> userColumns =
-        List.of(new IdColumn(), new UserNameColumn(), new EmailColumn(), new CpfColumn());
-    for (var user : createUsers()) {
-      userRows.add(new ColumnDataAdapter<User>(user, userColumns));
-    }
-    new Table().print(userRows, LIGHT, true);
+    new Table(new ColumnDataAdapter<User>(users(), UserColumns.values())).print();
+
+    System.out.println();
+    System.out.println("IMPRIMINDO USUÁRIOS COM REFLECTION");
+    System.out.println("-------------------");
+    final var userReflectionColumns = Util.inspect(User.class);
+    new Table(new ColumnDataAdapter<User>(users(), userReflectionColumns)).print();
 
     System.out.println();
     System.out.println("IMPRIMINDO PLANETAS");
     System.out.println("-------------------");
-    final List<TableData> planetRows = new ArrayList<>();
-    final List<ColumnData<? super Planet>> planetColumns =
-        List.of(
-            new PlanetNameColumn(),
-            new DiameterColumn(),
-            new DistSunKmColumn(),
-            new DistSunUaColumn(),
-            new TypeColumn());
-    for (var planet : createPlanets()) {
-      planetRows.add(new ColumnDataAdapter<Planet>(planet, planetColumns));
-    }
-    new Table().print(planetRows, LIGHT, true);
+    new Table(new ColumnDataAdapter<Planet>(planets(), PlanetColumns.values())).print();
+
+    System.out.println();
+    System.out.println("IMPRIMINDO PLANETAS COM REFLECTION");
+    System.out.println("-------------------");
+    final var planetReflectionColumns = Util.inspect(Planet.class);
+    planetReflectionColumns.add(PlanetColumns.SUN_DISTANCE_AU);
+    new Table(new ColumnDataAdapter<Planet>(planets(), planetReflectionColumns)).print();
   }
 
-  private static ArrayList<User> createUsers() {
+  private static ArrayList<User> users() {
     final var usuarios = new ArrayList<User>();
     usuarios.add(
         new User(101L, "Carlos Eduardo de Souza", "carlos.souza@email.com", "12345678901"));
@@ -60,7 +50,7 @@ public class DesignPatternsApplication {
     return usuarios;
   }
 
-  private static ArrayList<Planet> createPlanets() {
+  private static ArrayList<Planet> planets() {
     final var planetas = new ArrayList<Planet>();
     planetas.add(new Planet("Mercúrio", 4879, 57_910_000L, ROCK));
     planetas.add(new Planet("Vênus", 12104, 108_200_000L, ROCK));

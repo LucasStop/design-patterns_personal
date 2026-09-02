@@ -1,22 +1,45 @@
 package br.pucpr.table;
 
+import br.pucpr.table.model.ColumnData;
+import br.pucpr.table.model.TableData;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ColumnDataAdapter<T> implements TableData {
-  private final T object;
   private final List<ColumnData<? super T>> columns;
+  private final List<T> object;
 
-  public ColumnDataAdapter(T object, List<ColumnData<? super T>> columns) {
-    this.object = object;
+  public ColumnDataAdapter(
+      Collection<? extends T> object, Collection<? extends ColumnData<? super T>> columns) {
     this.columns = new ArrayList<>(columns);
+    this.object = new ArrayList<>(object);
   }
 
-  public String[] getHeaders() {
-    return columns.stream().map(ColumnData::getColumnName).toArray(String[]::new);
+  @SafeVarargs
+  public ColumnDataAdapter(Collection<? extends T> object, ColumnData<? super T>... columns) {
+    this(object, Arrays.asList(columns));
   }
 
-  public String[] getRow() {
-    return columns.stream().map(c -> c.getValue(object)).toArray(String[]::new);
+  @Override
+  public int rowCount() {
+    return object.size();
+  }
+
+  @Override
+  public int colCount() {
+    return columns.size();
+  }
+
+  @Override
+  public String header(int col) {
+    return columns.get(col).header();
+  }
+
+  @Override
+  public String get(int row, int col) {
+    var line = object.get(row);
+    return columns.get(col).get(line);
   }
 }
