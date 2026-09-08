@@ -10,7 +10,7 @@ Crie uma forma de adicionar paginação na tabela.
 
 ## 👥 Grupo
 
-Lucas Stopinski da Silva e Lucas Bruno e Silva
+Lucas Stopinski da Silva
 
 ---
 
