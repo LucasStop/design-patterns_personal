@@ -1,24 +1,22 @@
-package br.pucpr.table;
+package br.pucpr.table.model;
 
-import br.pucpr.table.model.ColumnData;
-import br.pucpr.table.model.TableData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class ColumnDataAdapter<T> implements TableData {
+public class ColumnTableData<T> implements TableData {
   private final List<ColumnData<? super T>> columns;
   private final List<T> object;
 
-  public ColumnDataAdapter(
+  public ColumnTableData(
       Collection<? extends T> object, Collection<? extends ColumnData<? super T>> columns) {
     this.columns = new ArrayList<>(columns);
     this.object = new ArrayList<>(object);
   }
 
   @SafeVarargs
-  public ColumnDataAdapter(Collection<? extends T> object, ColumnData<? super T>... columns) {
+  public ColumnTableData(Collection<? extends T> object, ColumnData<? super T>... columns) {
     this(object, Arrays.asList(columns));
   }
 

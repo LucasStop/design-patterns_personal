@@ -4,7 +4,7 @@ import br.pucpr.table.model.ColumnData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Util {
+public class ColumnInspector {
   public static <T> List<ColumnData<T>> inspect(Class<T> clazz) {
     var columns = new ArrayList<ColumnData<T>>();
     for (var method : clazz.getDeclaredMethods()) {
