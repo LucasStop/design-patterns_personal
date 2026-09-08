@@ -1,8 +1,10 @@
 # Atividade
 
-Antes de começar, analise como foi implementado o exemplo de reflexão na classe `Main` do professor e como foi criada/usada a anotação `@Column`.
+Crie uma forma de adicionar paginação na tabela.
 
-**Objetivo**: inspecionar a classe do usuário ou planeta e gerar o modelo da tabela automaticamente, usando anotações + reflection. Também consolidamos as colunas escritas à mão em enums (`UserColumns`/`PlanetColumns`), com corpo específico por constante.
+- Ela deve permitir paginar qualquer uma das opções que já criamos.
+- Você não deve alterar a classe da tabela, ou criar um filho dela.
+- Deve suportar futuras implementações de `TableData`.
 
 ---
 
@@ -14,12 +16,11 @@ Lucas Stopinski da Silva e Lucas Bruno e Silva
 
 ## 🎯 Objetivo da Atividade
 
-1. Criar a anotação `br.pucpr.table.reflection.Column` (`@Retention(RUNTIME)`, `@Target(METHOD)`, elemento `header()` com valor padrão) e aplicá-la nos componentes dos records `User`/`Planet`.
-2. Criar `ReflectedColumn<T> implements ColumnData<T>` — coluna que não formata nada à mão, só guarda um `Method` (o acessor anotado) e devolve `getter.invoke(object)` na hora de ler o valor.
-3. Criar `ColumnInspector.inspect(Class<T>)` — varre os métodos declarados de uma classe, filtra quem tem `@Column`, monta a lista de `ReflectedColumn` automaticamente.
-4. Consolidar as colunas manuais em dois enums, `UserColumns` e `PlanetColumns`, cada `implements ColumnData<T>` com corpo (`get`) por constante — substituindo as 9 classes separadas que tínhamos (`IdColumn`, `UserNameColumn`, `CpfColumn`, `EmailColumn`, `PlanetNameColumn`, `DiameterColumn`, `DistSunKmColumn`, `DistSunUaColumn`, `TypeColumn`).
-5. Implementar o padrão Builder: `SimpleColumn<T> implements ColumnData<T>` (coluna definida na hora via `Function<T, String>`, sem precisar de classe/enum por campo), `ColumnsBuilder<T>` (monta a lista de colunas de forma fluente — `add`, `inspect`, `build`) e `TableBuilder` (monta o `Table` de forma fluente — `.light()`/`.dark()`/`.rightAligned()`/`.withData(...)`), seguindo o mesmo desenho do material de referência.
-6. `DesignPatternsApplication` imprime 6 tabelas: usuário e planeta via enum, via reflection, e via Builder — pra deixar visível a diferença entre os três mecanismos de montar colunas.
+1. Implementar o padrão **Decorator**: `PagedTableData implements TableData` embrulha qualquer outro `TableData` (enum, reflection, Builder — não importa a origem) e expõe só uma fatia das linhas por vez, sem herdar de `Table` nem alterá-la.
+2. `rowCount()` devolve quantas linhas cabem **na página atual** (não o total), tratando a última página com menos linhas que `pageSize`. `colCount()`/`header(int)` repassam pro `TableData` original. `get(row, col)` traduz o índice relativo à página pro índice real antes de repassar.
+3. Navegação via `nextPage()`/`previousPage()` (mutam a página atual, guardados) e `totalPages()` (calculado a partir de `tableData.rowCount()` e `pageSize`, sem guardar estado redundante).
+4. `DesignPatternsApplication` demonstra a paginação de duas formas: embrulhando um `ColumnTableData` manual, e embrulhando o resultado de um `ColumnsBuilder` — provando que o Decorator funciona em cima de qualquer `TableData`, incluindo o que o Builder produz.
+5. Indicador "Página X de Y" centralizado embaixo de cada página impressa, sem expor nenhum método novo em `Table` — mede a largura a partir do `toString()` que `Table` já expõe publicamente.
 
 ---
 
@@ -31,9 +32,8 @@ Lucas Stopinski da Silva e Lucas Bruno e Silva
 
 ## 📝 Notas de Desenvolvimento
 
-- **Trocamos de arquitetura de propósito nesta atividade**: até a aula anterior, mantínhamos nossa própria arquitetura (`TableData` por linha, `Table` estático, coluna alargando pro maior valor) em vez da do professor. Nesta atividade, ao montar `ColumnData`/`ColumnTableData`/reflection do zero, acabamos convergindo pra arquitetura dele (`TableData` por coleção inteira — `rowCount/colCount/header/get` —, `Table` com estado e `toString()`, truncamento de valor grande com reticências, `Theme` movido pro pacote `table`). Decisão consciente, não acidente: like ficou claro que reescrever tudo de novo só pra manter a divergência não valia o esforço, dado que o conteúdo da aula (reflection + anotação) já pressupõe esse formato.
-- **Reflection só lê valor cru**: `ReflectedColumn.get()` faz só `getter.invoke(object).toString()` — sem máscara de CPF, sem separador de milhar, sem tradução de enum pra português. Por isso mantivemos as tabelas via reflection como uma segunda tabela **de demonstração**, ao lado da tabela via enum (que continua com toda a formatação) — não como substituição.
-- **Coluna calculada não dá pra gerar via reflection**: `sunDistanceKm` do planeta não tem `@Column` (a distância em UA precisa de conversão via `Planet.sunDistanceUa(long)`, que recebe parâmetro — `Method.invoke(object)` só chama método sem parâmetro). Na tabela "planetas refletidos", a coluna de UA é adicionada manualmente com `PlanetReflectionColumns.add(PlanetColumns.SUN_DISTANCE_AU)`, igual ao material do professor.
-- **SpotBugs `EI2` em `ReflectedColumn`**: o construtor guarda a referência do `Method` recebido. Diferente da cópia defensiva que já tínhamos feito em outras classes (`new ArrayList<>(...)`), não tem como copiar um `Method` — é metadado da JVM, não um dado comum. Suprimimos o alerta em `config/spotbugs/exclude.xml` (mesma solução que o material de referência usa).
-- **Generics no `ColumnTableData`**: o construtor aceita `Collection<? extends ColumnData<? super T>>` (extra `? extends` na coleção) — sem isso, o retorno de `ColumnInspector.inspect` (`List<ColumnData<T>>`) não encaixava no parâmetro esperado, por invariância de generics.
-- **Builder resolve a coluna calculada sem precisar de enum extra**: em vez de gerar via reflection e depois `add(PlanetColumns.SUN_DISTANCE_AU)` manualmente, o `ColumnsBuilder` permite `.add("Distance (au)", p -> ...)` — uma coluna lambda ad-hoc, via `SimpleColumn`, sem precisar de classe nem constante de enum pra um caso único.
+- **Por que Decorator**: as 3 restrições do enunciado (não alterar `Table`, não herdar dela, funcionar com qualquer `TableData` — inclusive futuro) descartam herança e forçam composição. `PagedTableData` implementa a mesma interface que envolve, e `Table` recebe ela normalmente sem saber que está paginada.
+- **`totalPages()` não é um campo, é um método**: a primeira versão guardava um campo `totalPages` calculado no construtor — redundante, já que `tableData.rowCount()` e `pageSize` não mudam depois de criado. Virou método (`Math.ceil((double) tableData.rowCount() / pageSize)`), sem estado extra pra manter sincronizado.
+- **Bug real que apareceu no meio do caminho**: o cálculo de páginas totais usava `paged.rowCount()` (linhas da página atual, no máximo `pageSize`) em vez de `tableData.rowCount()` (total real) — sempre dava "página X de 1". Só reaparece se alguém tentar calcular o total fora da própria classe; por isso o cálculo virou responsabilidade do `PagedTableData`.
+- **Centralizar o rótulo de página sem tocar em `Table`**: como a largura calculada da tabela é privada, usamos o `toString()` (já público, herdado de `Object` e sobrescrito por `Table`) pra pegar o texto renderizado, medir a largura pela primeira linha, e centralizar o texto por fora — sem adicionar nenhum método a `Table`.
+- **Decorator funciona igual em cima do Builder**: `new PagedTableData(columnsBuilder.build(dados), pageSize)` — o `ColumnsBuilder.build()` já devolve um `TableData` puro, então embrulhar ele não exige nenhuma mudança em `ColumnsBuilder`/`TableBuilder`, só composição das peças que já existiam.
