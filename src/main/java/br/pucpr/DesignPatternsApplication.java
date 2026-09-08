@@ -4,9 +4,7 @@ import static br.pucpr.planet.PlanetType.*;
 
 import br.pucpr.planet.Planet;
 import br.pucpr.planet.PlanetColumns;
-import br.pucpr.table.ColumnDataAdapter;
-import br.pucpr.table.Table;
-import br.pucpr.table.reflection.Util;
+import br.pucpr.table.TableBuilder;
 import br.pucpr.user.User;
 import br.pucpr.user.UserColumns;
 import java.util.ArrayList;
@@ -14,27 +12,49 @@ import java.util.ArrayList;
 public class DesignPatternsApplication {
   public static void main(String[] args) {
 
-    System.out.println("IMPRIMINDO USUÁRIOS");
-    System.out.println("-------------------");
-    new Table(new ColumnDataAdapter<User>(users(), UserColumns.values())).print();
+    //    System.out.println("IMPRIMINDO USUÁRIOS");
+    //    System.out.println("-------------------");
+    //    new Table(new ColumnTableData<User>(users(), UserColumns.values())).print();
+    //
+    //    System.out.println();
+    //    System.out.println("IMPRIMINDO USUÁRIOS COM REFLECTION");
+    //    System.out.println("-------------------");
+    //    final var userReflectionColumns = ColumnInspector.inspect(User.class);
+    //    new Table(new ColumnTableData<User>(users(), userReflectionColumns)).print();
 
     System.out.println();
-    System.out.println("IMPRIMINDO USUÁRIOS COM REFLECTION");
+    System.out.println("IMPRIMINDO USUÁRIOS COM PATTERN BUILDER");
     System.out.println("-------------------");
-    final var userReflectionColumns = Util.inspect(User.class);
-    new Table(new ColumnDataAdapter<User>(users(), userReflectionColumns)).print();
+    new TableBuilder()
+        .light()
+        .rightAligned()
+        .withData(users(), c -> c.add(UserColumns.values()))
+        .print();
+
+    //    System.out.println();
+    //    System.out.println("IMPRIMINDO PLANETAS");
+    //    System.out.println("-------------------");
+    //    new Table(new ColumnTableData<Planet>(planets(), PlanetColumns.values())).print();
+    //
+    //    System.out.println();
+    //    System.out.println("IMPRIMINDO PLANETAS COM REFLECTION");
+    //    System.out.println("-------------------");
+    //    final var planetReflectionColumns = ColumnInspector.inspect(Planet.class);
+    //    planetReflectionColumns.add(PlanetColumns.SUN_DISTANCE_AU);
+    //    new Table(new ColumnTableData<Planet>(planets(), planetReflectionColumns)).print();
 
     System.out.println();
-    System.out.println("IMPRIMINDO PLANETAS");
+    System.out.println("IMPRIMINDO PLANETAS COM PATTERN BUILDER");
     System.out.println("-------------------");
-    new Table(new ColumnDataAdapter<Planet>(planets(), PlanetColumns.values())).print();
-
-    System.out.println();
-    System.out.println("IMPRIMINDO PLANETAS COM REFLECTION");
-    System.out.println("-------------------");
-    final var planetReflectionColumns = Util.inspect(Planet.class);
-    planetReflectionColumns.add(PlanetColumns.SUN_DISTANCE_AU);
-    new Table(new ColumnDataAdapter<Planet>(planets(), planetReflectionColumns)).print();
+    new TableBuilder()
+        .light()
+        .rightAligned()
+        .withData(planets(), c -> c.add(PlanetColumns.values()))
+        //                    .add(
+        //                        "Distance (au)",
+        //                        p ->
+        // "%,11.2f".formatted(Planet.sunDistanceUa(p.sunDistanceKm()))))
+        .print();
   }
 
   private static ArrayList<User> users() {
