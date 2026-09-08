@@ -10,14 +10,14 @@ public enum UserColumns implements ColumnData<User> {
     }
   },
 
-  NAME("%-10s".formatted("Nome")) {
+  NAME("%-15s".formatted("Nome")) {
     @Override
     public String get(User user) {
       return user.name() == null || user.name().isEmpty() ? "NÃO INFORMADO" : user.name();
     }
   },
 
-  EMAIL("%-10s".formatted("Email")) {
+  EMAIL("%-15s".formatted("Email")) {
     @Override
     public String get(User user) {
       return validateAndFormatEmail(user.email());
@@ -28,7 +28,7 @@ public enum UserColumns implements ColumnData<User> {
     }
   },
 
-  CPF("%-10s".formatted("CPF")) {
+  CPF("%-15s".formatted("CPF")) {
     @Override
     public String get(User user) {
       return formatCpf(user.cpf());
