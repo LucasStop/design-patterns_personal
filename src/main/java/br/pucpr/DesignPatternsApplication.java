@@ -9,6 +9,8 @@ import br.pucpr.table.PagedTableData;
 import br.pucpr.table.Table;
 import br.pucpr.table.TableBuilder;
 import br.pucpr.table.model.ColumnTableData;
+import br.pucpr.table.observer.ObservableTableData;
+import br.pucpr.table.observer.TableObserver;
 import br.pucpr.user.User;
 import java.util.ArrayList;
 
@@ -87,6 +89,15 @@ public class DesignPatternsApplication {
       System.out.println(" ".repeat(padding) + label);
       pagedBuilder.nextPage();
     }
+
+    System.out.println();
+    System.out.println("IMPRIMINDO PLANETAS COM NOTIFICAÇÃO DE MUDANÇAS");
+    System.out.println("-------------------");
+    final var observableData =
+        new ObservableTableData(new ColumnTableData<Planet>(planets(), PlanetColumns.values()));
+    final var observedTable = new Table(observableData);
+    observableData.attach(new TableObserver(observedTable));
+    observableData.notifyChange();
   }
 
   private static ArrayList<User> users() {
