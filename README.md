@@ -1,26 +1,24 @@
-# Exemplo Prático: Análise de Código e Qualidade de Software
+# Atividade
 
-Este repositório contém um exemplo didático em Java desenvolvido para a disciplina de **Design Patterns**.
+Suponha que você precise redesenhar a tabela (ou talvez outros componentes relacionados) sempre que os dados da tabela mudarem.
 
-O objetivo deste projeto é servir de base para o estudo prático de manutenibilidade, legibilidade e boas práticas de arquitetura e código.
+Implemente uma solução que permita a esses componentes saberem que a mudança ocorreu.
+
+---
+
+## 👥 Grupo
+
+Lucas Stopinski da Silva
 
 ---
 
 ## 🎯 Objetivo da Atividade
 
-A classe `UsuarioPrinter` implementa uma funcionalidade completa e operacional: ela recebe uma lista de usuários e renderiza uma tabela formatada no console.
-
-Apesar de o programa funcionar perfeitamente do ponto de vista funcional, a estrutura interna do código contém diversas fragilidades de design que impactam diretamente a sua evolução, legibilidade e facilidade de testes.
-
-Sua missão como aluno é analisar o código-fonte, identificar os pontos de melhoria estruturais e aplicar as refatorações necessárias para elevar a qualidade do projeto sem alterar a saída gerada no console.
-
----
-
-## 📋 Proposta de Exercício
-
-1. **Análise Crítica:** Esquadrinhe o método `print` e identifique as violações de boas práticas de programação e orientação a objetos.
-2. **Mapeamento:** Liste quais sintomas de código deteriorado (*Code Smells*) estão presentes e quais princípios de design foram violados.
-3. **Refatoração:** Aplique técnicas de refatoração para transformar o código em uma solução limpa, bem estruturada e fácil de manter.
+1. Implementar o padrão **Observer**: `ObservableTableData implements TableData, Observable` embrulha qualquer outro `TableData` (Decorator, igual `PagedTableData`) e mantém uma lista de `Observer`s interessados em saber quando os dados mudam.
+2. `Observer` define o contrato de quem reage (`onChange(TableData data)`), recebendo os dados atuais. `Observable` define o contrato de quem é observado (`attach`/`detach`/`notifyChange`).
+3. `notifyChange()` percorre os observers registrados e chama `onChange(this)` em cada um, sem que `ObservableTableData` precise saber o que cada observer faz com o aviso.
+4. `Observer` é uma `@FunctionalInterface`: o observer concreto é uma lambda que, ao ser avisada, chama `setData` + `print` na `Table` — sem precisar alterar `Table`.
+5. `DesignPatternsApplication` demonstra o fluxo completo: cria um `ObservableTableData` sobre os planetas, anexa uma lambda como observer, e dispara `notifyChange()` para simular a mudança — a tabela só é redesenhada quando a notificação acontece.
 
 ---
 
@@ -28,9 +26,12 @@ Sua missão como aluno é analisar o código-fonte, identificar os pontos de mel
 
 * **Linguagem:** Java 17 ou superior
 
-### Como Executar
+---
 
-```bash
-javac UsuarioPrinter.java
-java UsuarioPrinter
-```
+## 📝 Notas de Desenvolvimento
+
+- **Por que Observer**: o problema pede exatamente o que o padrão resolve — desacoplar quem gera a mudança (os dados) de quem precisa reagir a ela (a tabela e outros componentes futuros), sem que o gerador conheça os detalhes de cada reação.
+- **Onde entra o Observer na arquitetura**: como `TableData` não tem mutador, quem detecta a mudança nos dados subjacentes é responsável por chamar `notifyChange()` explicitamente — o padrão cuida de propagar o aviso, não de detectar a mudança sozinho.
+- **Observer recebendo o `TableData` novo**: `onChange(TableData data)` passa o próprio `ObservableTableData` (que também é um `TableData`), então quem reage já tem acesso aos dados atualizados sem precisar consultar de volta o objeto original.
+- **Decorator + Observer compostos**: `ObservableTableData` segue o mesmo formato do `PagedTableData` — embrulha qualquer `TableData` e repassa `rowCount/colCount/header/get` — mas soma o papel de `Observable` por cima, então dá pra observar dados já paginados ou construídos via `Builder` sem nenhuma mudança nessas classes.
+- **O observer não altera `Table`**: a lambda reaproveita `setData`, que já existia, para trocar os dados e redesenhar — mantendo `Table` totalmente alheia ao fato de que está sendo observada.
