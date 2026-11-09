@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ColumnsBuilder<T> {
   private List<ColumnData<T>> columns;
@@ -38,5 +39,9 @@ public class ColumnsBuilder<T> {
 
   public TableData build(Collection<T> data) {
     return new ColumnTableData<>(data, columns);
+  }
+
+  public TableData build(Collection<T> data, Predicate<? super T> filter) {
+    return build(data.stream().filter(filter).toList());
   }
 }

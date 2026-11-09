@@ -10,7 +10,6 @@ import br.pucpr.table.Table;
 import br.pucpr.table.TableBuilder;
 import br.pucpr.table.model.ColumnTableData;
 import br.pucpr.table.observer.ObservableTableData;
-import br.pucpr.table.observer.TableObserver;
 import br.pucpr.user.User;
 import java.util.ArrayList;
 
@@ -96,8 +95,22 @@ public class DesignPatternsApplication {
     final var observableData =
         new ObservableTableData(new ColumnTableData<Planet>(planets(), PlanetColumns.values()));
     final var observedTable = new Table(observableData);
-    observableData.attach(new TableObserver(observedTable));
+    observableData.attach(
+        changed -> {
+          observedTable.setData(changed);
+          observedTable.print();
+        });
     observableData.notifyChange();
+
+    System.out.println();
+    System.out.println("IMPRIMINDO PLANETAS ROCHOSOS COM FILTRO (PREDICATE)");
+    System.out.println("-------------------");
+    new TableBuilder()
+        .withData(
+            new ColumnsBuilder<Planet>()
+                .add(PlanetColumns.values())
+                .build(planets(), planet -> planet.type() == ROCK))
+        .print();
   }
 
   private static ArrayList<User> users() {

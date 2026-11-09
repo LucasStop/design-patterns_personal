@@ -17,8 +17,8 @@ Lucas Stopinski da Silva
 1. Implementar o padrão **Observer**: `ObservableTableData implements TableData, Observable` embrulha qualquer outro `TableData` (Decorator, igual `PagedTableData`) e mantém uma lista de `Observer`s interessados em saber quando os dados mudam.
 2. `Observer` define o contrato de quem reage (`onChange(TableData data)`), recebendo os dados atuais. `Observable` define o contrato de quem é observado (`attach`/`detach`/`notifyChange`).
 3. `notifyChange()` percorre os observers registrados e chama `onChange(this)` em cada um, sem que `ObservableTableData` precise saber o que cada observer faz com o aviso.
-4. `TableObserver implements Observer` é o exemplo concreto: embrulha uma `Table` e, ao ser avisado, chama `setData` + `print` nela — sem precisar alterar `Table`.
-5. `DesignPatternsApplication` demonstra o fluxo completo: cria um `ObservableTableData` sobre os planetas, anexa um `TableObserver`, e dispara `notifyChange()` para simular a mudança — a tabela só é redesenhada quando a notificação acontece.
+4. `Observer` é uma `@FunctionalInterface`: o observer concreto é uma lambda que, ao ser avisada, chama `setData` + `print` na `Table` — sem precisar alterar `Table`.
+5. `DesignPatternsApplication` demonstra o fluxo completo: cria um `ObservableTableData` sobre os planetas, anexa uma lambda como observer, e dispara `notifyChange()` para simular a mudança — a tabela só é redesenhada quando a notificação acontece.
 
 ---
 
@@ -34,4 +34,4 @@ Lucas Stopinski da Silva
 - **Onde entra o Observer na arquitetura**: como `TableData` não tem mutador, quem detecta a mudança nos dados subjacentes é responsável por chamar `notifyChange()` explicitamente — o padrão cuida de propagar o aviso, não de detectar a mudança sozinho.
 - **Observer recebendo o `TableData` novo**: `onChange(TableData data)` passa o próprio `ObservableTableData` (que também é um `TableData`), então quem reage já tem acesso aos dados atualizados sem precisar consultar de volta o objeto original.
 - **Decorator + Observer compostos**: `ObservableTableData` segue o mesmo formato do `PagedTableData` — embrulha qualquer `TableData` e repassa `rowCount/colCount/header/get` — mas soma o papel de `Observable` por cima, então dá pra observar dados já paginados ou construídos via `Builder` sem nenhuma mudança nessas classes.
-- **`TableObserver` não altera `Table`**: reaproveita `setData`, que já existia, para trocar os dados e redesenhar — mantendo `Table` totalmente alheia ao fato de que está sendo observada.
+- **O observer não altera `Table`**: a lambda reaproveita `setData`, que já existia, para trocar os dados e redesenhar — mantendo `Table` totalmente alheia ao fato de que está sendo observada.
